@@ -101,7 +101,7 @@
                         <i class="fa-brands fa-google w-5 text-center text-brand-600"></i> <span class="font-bold text-gray-900">Firemní Google profil</span>
                     </div>
                 </button>
-                <div id="gmb-submenu" class="flex flex-col gap-1 pl-11 pr-3 transition-all duration-300">
+                <div id="gmb-submenu" class="flex flex-col gap-1 pl-11 pr-3 transition-all duration-300 overflow-hidden max-h-40 opacity-100 py-1">
                     <a href="seznam-profilu.html" class="block py-1.5 text-sm text-brand-600 font-bold transition">Seznam profilů</a>
                     <a href="gmb-prispevky.html" class="block py-1.5 text-sm text-gray-500 hover:text-gray-900 transition font-medium">Google příspěvky</a>
                     <a href="gmb-statistiky.html" class="block py-1.5 text-sm text-gray-500 hover:text-gray-900 transition font-medium">Statistiky</a>
@@ -146,9 +146,6 @@
 
             <div class="h-px bg-border my-4 mx-3"></div>
             
-            <a href="fakturace.html" class="flex items-center gap-3 text-gray-600 hover:bg-gray-50 hover:text-gray-900 px-3 py-2.5 rounded-lg font-medium transition">
-                <i class="fa-solid fa-file-invoice w-5 text-center"></i> Fakturace
-            </a>
             <a href="nastaveni.html" class="flex items-center gap-3 text-gray-600 hover:bg-gray-50 hover:text-gray-900 px-3 py-2.5 rounded-lg font-medium transition">
                 <i class="fa-solid fa-gear w-5 text-center"></i> Nastavení
             </a>
@@ -300,7 +297,13 @@
 
                 <!-- NAŠEPTÁVAČ A SEZNAM POBOČEK -->
                 <div>
-                    <label class="label-minimal">Pobočky k úpravě</label>
+                    <div class="flex justify-between items-end mb-1">
+                        <label class="label-minimal" style="margin-bottom: 0;">Pobočky k úpravě</label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="select-all-branches" onchange="toggleAllBranches(this)" class="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500">
+                            <span class="text-xs font-semibold text-gray-600">Označit vše</span>
+                        </label>
+                    </div>
                     <div class="relative mb-3 mt-1">
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
                         <input type="text" id="branch-search" onkeyup="filterBranches()" class="input-minimal pl-9" placeholder="Vyhledat pobočku (např. Praha, Business Power)...">
@@ -445,6 +448,11 @@
             if (searchInput) {
                 searchInput.value = '';
                 filterBranches(); 
+            }
+            
+            const selectAllCheckbox = document.getElementById('select-all-branches');
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = false;
             }
 
             let title = '';
@@ -694,6 +702,21 @@
                     node.style.display = "flex";
                 } else {
                     node.style.display = "none";
+                }
+            });
+            
+            const selectAllCheckbox = document.getElementById('select-all-branches');
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = false;
+            }
+        }
+
+        function toggleAllBranches(masterCheckbox) {
+            const checkboxes = document.querySelectorAll('#branch-list input[type="checkbox"]');
+            checkboxes.forEach(cb => {
+                // Označí/odznačí jen ty pobočky, které jsou viditelné (vyfiltrované)
+                if (cb.closest('.branch-item').style.display !== 'none') {
+                    cb.checked = masterCheckbox.checked;
                 }
             });
         }
