@@ -769,16 +769,36 @@
         function filterTableBranches() {
             const input = document.getElementById('table-search');
             const filter = input.value.toLowerCase();
-            const rows = document.querySelectorAll('#profiles-table tbody tr');
+            const rows = document.querySelectorAll('#profiles-table tbody tr.main-row');
             
             rows.forEach(row => {
                 const text = row.innerText.toLowerCase();
+                const detailId = row.getAttribute('data-detail-id');
+                const detailRow = document.getElementById(detailId);
+                
                 if (text.includes(filter)) {
                     row.style.display = "";
                 } else {
                     row.style.display = "none";
+                    if (detailRow) {
+                        detailRow.classList.add('hidden');
+                        document.getElementById('icon-' + detailId.split('-')[1]).classList.remove('rotate-180');
+                    }
                 }
             });
+        }
+
+        function toggleProfileDetail(detailId, iconId) {
+            const detailRow = document.getElementById(detailId);
+            const icon = document.getElementById(iconId);
+
+            if (detailRow.classList.contains('hidden')) {
+                detailRow.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                detailRow.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
         }
 
         function toggleDayClosed(checkbox) {
@@ -832,7 +852,7 @@
             btn.closest('.time-row').remove();
         }
 
-        // Generování seznamu profilů
+        // TOTO JE TO NOVÉ: Generování seznamu profilů
         function generateProfiles() {
             const tbody = document.getElementById('profiles-tbody');
             const modalList = document.getElementById('branch-list');
@@ -844,22 +864,84 @@
                 const street = i === 1 ? 'Chrastavská 231' : `Bucharova ${2650 + i}/12`;
                 const city = i === 1 ? 'Liberec' : 'Praha 13';
                 const pid = `ID-${1000 + i}`;
+                const detailId = `detail-${i}`;
+                const iconId = `icon-${i}`;
 
                 html += `
-                <tr class="hover:bg-gray-50/50 transition group">
-                    <td class="py-4 px-6"><input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"></td>
+                <tr class="hover:bg-gray-50/50 transition group cursor-pointer main-row" onclick="toggleProfileDetail('${detailId}', '${iconId}')" data-detail-id="${detailId}">
+                    <td class="py-4 px-6" onclick="event.stopPropagation()"><input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"></td>
                     <td class="py-4 px-6 text-sm text-gray-500 whitespace-nowrap">${pid}</td>
                     <td class="py-4 px-6 text-sm text-gray-900 font-medium">${name}</td>
                     <td class="py-4 px-6 text-sm text-gray-600">${street}</td>
                     <td class="py-4 px-6 text-sm text-gray-600">${city}</td>
                     <td class="py-4 px-6 text-right whitespace-nowrap">
                         <div class="flex items-center justify-end gap-2">
-                            <button onclick="showToast('Otevírám statistiky')" class="text-gray-400 hover:text-brand-600 p-2 transition" title="Statistiky"><i class="fa-solid fa-chart-simple"></i></button>
-                            <button onclick="showToast('Otevírám profil v Mapách')" class="text-gray-400 hover:text-brand-600 p-2 transition" title="Zobrazit v Google Mapách"><i class="fa-solid fa-map-location-dot"></i></button>
-                            <button onclick="showToast('Otevírám profil ve Vyhledávači')" class="text-gray-400 hover:text-brand-600 p-2 transition" title="Zobrazit v Google Vyhledávači"><i class="fa-brands fa-google"></i></button>
+                            <button onclick="event.stopPropagation(); showToast('Otevírám statistiky')" class="text-gray-400 hover:text-brand-600 p-2 transition" title="Statistiky"><i class="fa-solid fa-chart-simple"></i></button>
+                            <button onclick="event.stopPropagation(); showToast('Otevírám profil v Mapách')" class="text-gray-400 hover:text-brand-600 p-2 transition" title="Zobrazit v Google Mapách"><i class="fa-solid fa-map-location-dot"></i></button>
+                            <button onclick="event.stopPropagation(); showToast('Otevírám profil ve Vyhledávači')" class="text-gray-400 hover:text-brand-600 p-2 transition" title="Zobrazit v Google Vyhledávači"><i class="fa-brands fa-google"></i></button>
                             
                             <!-- EXTERNÍ ODKAZ NA EDITACI (např. editacefirmy/index.html) -->
-                            <a href="index.html?tab=tab-spolecnost" class="text-gray-400 hover:text-brand-600 p-2 transition flex items-center justify-center" title="Upravit profil"><i class="fa-solid fa-pen"></i></a>
+                            <a href="index.html?tab=tab-spolecnost" onclick="event.stopPropagation();" class="text-gray-400 hover:text-brand-600 p-2 transition flex items-center justify-center" title="Upravit profil"><i class="fa-solid fa-pen"></i></a>
+                            
+                            <i id="${iconId}" class="fa-solid fa-chevron-down text-gray-400 ml-2 transition-transform duration-300 cursor-pointer"></i>
+                        </div>
+                    </td>
+                </tr>
+                
+                <!-- ROZBALOVACÍ DETAIL PROFILU -->
+                <tr id="${detailId}" class="hidden bg-gray-50/80 border-b border-gray-200">
+                    <td colspan="6" class="p-0 cursor-default">
+                        <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8 shadow-[inset_0_4px_6px_-4px_rgba(0,0,0,0.05)]">
+                            <!-- Levý sloupec: Služby -->
+                            <div>
+                                <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider mb-3">Aktivní služby pro tuto pobočku</h4>
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-full bg-green-50 text-brand-600 flex items-center justify-center"><i class="fa-brands fa-google"></i></div>
+                                            <span class="text-sm font-medium text-gray-900">Firemní Google profil</span>
+                                        </div>
+                                        <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-bold uppercase tracking-wider">Aktivní</span>
+                                    </div>
+                                    <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center"><i class="fa-solid fa-street-view"></i></div>
+                                            <span class="text-sm font-medium text-gray-500">Google Street View</span>
+                                        </div>
+                                        <span class="px-2 py-0.5 bg-gray-100 text-gray-500 rounded text-[10px] font-bold uppercase tracking-wider">Neaktivní</span>
+                                    </div>
+                                    <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-full bg-green-50 text-brand-600 flex items-center justify-center"><i class="fa-solid fa-wifi"></i></div>
+                                            <span class="text-sm font-medium text-gray-900">NFC Produkty</span>
+                                        </div>
+                                        <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-bold uppercase tracking-wider">Aktivní</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Pravý sloupec: Historie aktivit -->
+                            <div>
+                                <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider mb-3">Historie aktivit profilu</h4>
+                                <div class="relative border-l-2 border-gray-200 ml-3 space-y-4 pb-2">
+                                    <div class="relative pl-5">
+                                        <div class="absolute w-2.5 h-2.5 bg-brand-500 rounded-full -left-[6px] top-1.5 border-2 border-white"></div>
+                                        <p class="text-xs text-gray-500 mb-0.5">Dnes, 09:15 • Systém (Hromadná úprava)</p>
+                                        <p class="text-sm font-medium text-gray-900">Změna otevírací doby a svátků</p>
+                                    </div>
+                                    <div class="relative pl-5">
+                                        <div class="absolute w-2.5 h-2.5 bg-gray-300 rounded-full -left-[6px] top-1.5 border-2 border-white"></div>
+                                        <p class="text-xs text-gray-500 mb-0.5">Včera, 14:30 • Michaela Dlouhá</p>
+                                        <p class="text-sm font-medium text-gray-900">Přidán nový Google Příspěvek (Sleva 20%)</p>
+                                    </div>
+                                    <div class="relative pl-5">
+                                        <div class="absolute w-2.5 h-2.5 bg-gray-300 rounded-full -left-[6px] top-1.5 border-2 border-white"></div>
+                                        <p class="text-xs text-gray-500 mb-0.5">15.05.2026 • Jan Novák</p>
+                                        <p class="text-sm font-medium text-gray-900">Aktualizace hlavního telefonního čísla</p>
+                                    </div>
+                                </div>
+                                <button onclick="showToast('Otevírám kompletní historii profilu...')" class="text-xs font-medium text-brand-600 hover:text-brand-700 mt-2 ml-3 transition">Zobrazit celou historii profilu</button>
+                            </div>
                         </div>
                     </td>
                 </tr>`;
