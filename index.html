@@ -70,6 +70,9 @@
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="font-sans text-gray-900 h-screen flex overflow-hidden antialiased">
@@ -271,6 +274,516 @@
         </main>
     </div>
 
+    <!-- MODÁLNÍ OKNO PRO ÚPRAVU JEDNÉ POBOČKY -->
+    <div id="single-edit-modal" class="fixed inset-0 bg-gray-900/60 z-[60] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 px-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl transform scale-95 transition-transform duration-300 overflow-hidden flex flex-col h-[90vh]">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 shrink-0">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900">Úprava profilu: <span id="se-branch-name" class="text-brand-600"></span></h3>
+                    <p class="text-xs text-gray-500 mt-0.5"><i class="fa-solid fa-store mr-1"></i> <span id="se-branch-id"></span></p>
+                </div>
+                <button onclick="toggleSingleEditModal()" class="text-gray-400 hover:text-gray-600 transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="flex flex-1 overflow-hidden flex-col md:flex-row">
+                <!-- LEVÉ MENU MODÁLU -->
+                <div class="w-full md:w-56 lg:w-64 bg-gray-50 border-b md:border-b-0 md:border-r border-gray-200 flex flex-row md:flex-col overflow-x-auto md:overflow-y-auto shrink-0 hide-scrollbar">
+                    <button id="btn-se-info" onclick="switchSingleEditTab('se-info')" class="whitespace-nowrap md:whitespace-normal w-auto md:w-full text-left px-5 py-4 md:border-l-2 md:border-b-0 border-b-2 border-brand-500 bg-white text-brand-600 font-medium text-sm transition"><i class="fa-solid fa-circle-info w-5 text-center mr-1 md:mr-2"></i> O firmě</button>
+                    <button id="btn-se-kontakt" onclick="switchSingleEditTab('se-kontakt')" class="whitespace-nowrap md:whitespace-normal w-auto md:w-full text-left px-5 py-4 md:border-l-2 md:border-b-0 border-b-2 border-transparent text-gray-600 hover:bg-white hover:text-gray-900 font-medium text-sm transition"><i class="fa-solid fa-phone w-5 text-center mr-1 md:mr-2"></i> Kontakty</button>
+                    <button id="btn-se-misto" onclick="switchSingleEditTab('se-misto')" class="whitespace-nowrap md:whitespace-normal w-auto md:w-full text-left px-5 py-4 md:border-l-2 md:border-b-0 border-b-2 border-transparent text-gray-600 hover:bg-white hover:text-gray-900 font-medium text-sm transition"><i class="fa-solid fa-location-dot w-5 text-center mr-1 md:mr-2"></i> Místo</button>
+                    <button id="btn-se-doba" onclick="switchSingleEditTab('se-doba')" class="whitespace-nowrap md:whitespace-normal w-auto md:w-full text-left px-5 py-4 md:border-l-2 md:border-b-0 border-b-2 border-transparent text-gray-600 hover:bg-white hover:text-gray-900 font-medium text-sm transition"><i class="fa-solid fa-clock w-5 text-center mr-1 md:mr-2"></i> Otevírací doba</button>
+                    <button id="btn-se-atributy" onclick="switchSingleEditTab('se-atributy')" class="whitespace-nowrap md:whitespace-normal w-auto md:w-full text-left px-5 py-4 md:border-l-2 md:border-b-0 border-b-2 border-transparent text-gray-600 hover:bg-white hover:text-gray-900 font-medium text-sm transition"><i class="fa-solid fa-list-check w-5 text-center mr-1 md:mr-2"></i> Více</button>
+                    <button id="btn-se-fotky" onclick="switchSingleEditTab('se-fotky')" class="whitespace-nowrap md:whitespace-normal w-auto md:w-full text-left px-5 py-4 md:border-l-2 md:border-b-0 border-b-2 border-transparent text-gray-600 hover:bg-white hover:text-gray-900 font-medium text-sm transition"><i class="fa-regular fa-images w-5 text-center mr-1 md:mr-2"></i> Fotky</button>
+                    <button id="btn-se-sluzby" onclick="switchSingleEditTab('se-sluzby')" class="whitespace-nowrap md:whitespace-normal w-auto md:w-full text-left px-5 py-4 md:border-l-2 md:border-b-0 border-b-2 border-transparent text-gray-600 hover:bg-white hover:text-gray-900 font-medium text-sm transition"><i class="fa-solid fa-clipboard-list w-5 text-center mr-1 md:mr-2"></i> Služby</button>
+                    <button id="btn-se-produkty" onclick="switchSingleEditTab('se-produkty')" class="whitespace-nowrap md:whitespace-normal w-auto md:w-full text-left px-5 py-4 md:border-l-2 md:border-b-0 border-b-2 border-transparent text-gray-600 hover:bg-white hover:text-gray-900 font-medium text-sm transition"><i class="fa-solid fa-box-open w-5 text-center mr-1 md:mr-2"></i> Produkty</button>
+                    <button id="btn-se-novinky" onclick="switchSingleEditTab('se-novinky')" class="whitespace-nowrap md:whitespace-normal w-auto md:w-full text-left px-5 py-4 md:border-l-2 md:border-b-0 border-b-2 border-transparent text-gray-600 hover:bg-white hover:text-gray-900 font-medium text-sm transition"><i class="fa-regular fa-newspaper w-5 text-center mr-1 md:mr-2"></i> Novinky</button>
+                </div>
+
+                <!-- PRAVÝ OBSAH MODÁLU -->
+                <div class="flex-1 overflow-y-auto p-6 lg:p-8 bg-white custom-scrollbar">
+                    
+                    <!-- O FIRMĚ -->
+                    <div id="se-info" class="se-tab-content block space-y-8">
+                        <div>
+                            <h4 class="font-bold text-gray-900 text-sm mb-4 border-b border-gray-100 pb-2">Základní informace</h4>
+                            <div class="space-y-5">
+                                <div>
+                                    <label class="label-minimal">Název firmy</label>
+                                    <input type="text" class="input-minimal" value="Business Power s.r.o.">
+                                    <p class="text-[10px] text-gray-400 mt-1">Váš název by měl odpovídat reálnému názvu podniku a firemnímu značení.</p>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div>
+                                        <label class="label-minimal">Hlavní kategorie</label>
+                                        <input type="text" class="input-minimal" value="Marketingová agentura">
+                                        <p class="text-[10px] text-gray-400 mt-1">Nejlépe popisuje vaši hlavní činnost.</p>
+                                    </div>
+                                    <div>
+                                        <label class="label-minimal">Další kategorie</label>
+                                        <div class="flex flex-col gap-2">
+                                            <input type="text" class="input-minimal" value="Reklamní agentura">
+                                            <button class="text-brand-600 text-xs font-semibold text-left hover:underline w-max">+ Přidat další kategorii</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="label-minimal">Popis</label>
+                                    <textarea class="input-minimal" rows="5">Jsme přední česká marketingová agentura...</textarea>
+                                    <p class="text-[10px] text-gray-400 mt-1 text-right">380 / 750 znaků</p>
+                                </div>
+                                <div>
+                                    <label class="label-minimal">Datum otevření</label>
+                                    <div class="grid grid-cols-3 gap-3 w-full md:w-2/3">
+                                        <input type="number" class="input-minimal" placeholder="Rok" value="2010">
+                                        <select class="input-minimal"><option>Měsíc</option><option selected>Květen</option></select>
+                                        <input type="number" class="input-minimal" placeholder="Den" value="15">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KONTAKTY -->
+                    <div id="se-kontakt" class="se-tab-content hidden space-y-8">
+                        <div>
+                            <h4 class="font-bold text-gray-900 text-sm mb-4 border-b border-gray-100 pb-2">Telefon a web</h4>
+                            <div class="space-y-5">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div>
+                                        <label class="label-minimal">Hlavní telefon</label>
+                                        <input type="tel" class="input-minimal" value="+420 728 414 452">
+                                    </div>
+                                    <div>
+                                        <label class="label-minimal">Další telefony</label>
+                                        <div class="flex flex-col gap-2">
+                                            <input type="tel" class="input-minimal" placeholder="Přidat další telefon">
+                                            <button class="text-brand-600 text-xs font-semibold text-left hover:underline w-max">+ Přidat telefon</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="label-minimal">Webové stránky</label>
+                                    <input type="url" class="input-minimal" value="https://www.businesspower.cz">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-gray-900 text-sm mb-4 border-b border-gray-100 pb-2">Sociální profily <span class="ml-2 px-1.5 py-0.5 bg-brand-50 text-brand-600 text-[10px] rounded uppercase">Nové</span></h4>
+                            <p class="text-xs text-gray-500 mb-4">Propojte svůj Google profil s profily na sociálních sítích. Zobrazí se u vašeho profilu ve Vyhledávání.</p>
+                            
+                            <div class="space-y-3">
+                                <div class="flex gap-3 items-center">
+                                    <select class="input-minimal w-1/3">
+                                        <option value="facebook" selected>Facebook</option>
+                                        <option value="instagram">Instagram</option>
+                                        <option value="linkedin">LinkedIn</option>
+                                        <option value="tiktok">TikTok</option>
+                                        <option value="x">X (Twitter)</option>
+                                        <option value="youtube">YouTube</option>
+                                    </select>
+                                    <input type="url" class="input-minimal flex-1" value="https://facebook.com/businesspower">
+                                    <button class="text-gray-400 hover:text-red-500 transition px-2"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                                <div class="flex gap-3 items-center">
+                                    <select class="input-minimal w-1/3">
+                                        <option value="facebook">Facebook</option>
+                                        <option value="instagram" selected>Instagram</option>
+                                        <option value="linkedin">LinkedIn</option>
+                                    </select>
+                                    <input type="url" class="input-minimal flex-1" value="https://instagram.com/business_power_cz">
+                                    <button class="text-gray-400 hover:text-red-500 transition px-2"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                                <button class="text-brand-600 text-xs font-semibold text-left hover:underline mt-2 w-max">+ Přidat sociální profil</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MÍSTO -->
+                    <div id="se-misto" class="se-tab-content hidden space-y-8">
+                        <div>
+                            <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-2">
+                                <h4 class="font-bold text-gray-900 text-sm">Sídlo podniku</h4>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <span class="text-xs text-gray-600 font-medium">Zobrazovat adresu zákazníkům</span>
+                                    <div class="relative inline-block w-10 align-middle select-none transition duration-200 ease-in">
+                                        <input type="checkbox" checked class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-brand-500"/>
+                                        <label class="toggle-label block overflow-hidden h-5 rounded-full bg-brand-500 cursor-pointer"></label>
+                                    </div>
+                                </label>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Adresa Formulář -->
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="label-minimal">Země / Oblast</label>
+                                        <input type="text" class="input-minimal" value="Česko">
+                                    </div>
+                                    <div>
+                                        <label class="label-minimal">Ulice a číslo</label>
+                                        <input type="text" class="input-minimal" value="Bucharova 2650/12">
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="label-minimal">Město</label>
+                                            <input type="text" class="input-minimal" value="Praha 13">
+                                        </div>
+                                        <div>
+                                            <label class="label-minimal">PSČ</label>
+                                            <input type="text" class="input-minimal" value="158 00">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Mapa -->
+                                <div>
+                                    <label class="label-minimal">Poloha špendlíku na mapě</label>
+                                    <div class="w-full h-48 bg-gray-200 rounded-lg border border-gray-300 relative overflow-hidden flex items-center justify-center cursor-pointer group">
+                                        <!-- Fake map background -->
+                                        <img src="https://iili.io/JcO5UqN.jpg" class="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 transition">
+                                        <div class="absolute inset-0 bg-gray-900/10 group-hover:bg-transparent transition"></div>
+                                        <i class="fa-solid fa-location-dot text-red-500 text-3xl drop-shadow-md relative -top-3"></i>
+                                        <div class="absolute bottom-2 right-2 px-2 py-1 bg-white/90 backdrop-blur rounded text-[10px] font-bold text-gray-700 shadow-sm border border-gray-200">Upravit polohu</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-gray-900 text-sm mb-4 border-b border-gray-100 pb-2">Obsluhované oblasti</h4>
+                            <p class="text-xs text-gray-500 mb-3">Zákazníci vaši adresu neuvidí (pokud je skrytá výše). Zobrazí se jim ale, kam doručujete nebo kde nabízíte služby. Můžete zadat až 20 oblastí.</p>
+                            <input type="text" class="input-minimal mb-3" placeholder="Vyhledat oblast (např. město, kraj, PSČ)...">
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-3 py-1 bg-gray-100 border border-gray-200 text-gray-700 text-xs rounded-full flex items-center gap-2">Praha <i class="fa-solid fa-xmark cursor-pointer hover:text-red-500"></i></span>
+                                <span class="px-3 py-1 bg-gray-100 border border-gray-200 text-gray-700 text-xs rounded-full flex items-center gap-2">Středočeský kraj <i class="fa-solid fa-xmark cursor-pointer hover:text-red-500"></i></span>
+                                <span class="px-3 py-1 bg-gray-100 border border-gray-200 text-gray-700 text-xs rounded-full flex items-center gap-2">Kladno <i class="fa-solid fa-xmark cursor-pointer hover:text-red-500"></i></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- OTEVÍRACÍ DOBA -->
+                    <div id="se-doba" class="se-tab-content hidden space-y-8">
+                        
+                        <div>
+                            <h4 class="font-bold text-gray-900 text-sm mb-4 border-b border-gray-100 pb-2">Stav podniku a otevírací doba</h4>
+                            
+                            <div class="mb-6 space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                <label class="flex items-start gap-3 cursor-pointer group">
+                                    <input type="radio" name="se_business_status" class="mt-1 w-4 h-4 text-brand-600 focus:ring-brand-500 border-gray-300" checked>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">Otevřeno (s hlavní otevírací dobou)</p>
+                                    </div>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer group">
+                                    <input type="radio" name="se_business_status" class="mt-1 w-4 h-4 text-brand-600 focus:ring-brand-500 border-gray-300">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">Otevřeno (bez otevírací doby)</p>
+                                    </div>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer group">
+                                    <input type="radio" name="se_business_status" class="mt-1 w-4 h-4 text-brand-600 focus:ring-brand-500 border-gray-300">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">Dočasně uzavřeno</p>
+                                    </div>
+                                </label>
+                                <label class="flex items-start gap-3 cursor-pointer group">
+                                    <input type="radio" name="se_business_status" class="mt-1 w-4 h-4 text-brand-600 focus:ring-brand-500 border-gray-300">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">Trvale uzavřeno</p>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="space-y-4">
+                                <!-- Standard schedule from previous block applied here for 1 branch -->
+                                <!-- Pon -->
+                                <div class="flex items-center gap-4 py-2 border-b border-gray-50">
+                                    <div class="w-24 shrink-0"><label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked class="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"><span class="text-sm font-medium text-gray-900">Pondělí</span></label></div>
+                                    <div class="flex items-center gap-2 flex-1"><input type="time" class="input-minimal py-1.5 w-28" value="08:00"><span class="text-gray-400">-</span><input type="time" class="input-minimal py-1.5 w-28" value="17:00"></div>
+                                </div>
+                                <!-- Ute -->
+                                <div class="flex items-center gap-4 py-2 border-b border-gray-50">
+                                    <div class="w-24 shrink-0"><label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked class="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"><span class="text-sm font-medium text-gray-900">Úterý</span></label></div>
+                                    <div class="flex items-center gap-2 flex-1"><input type="time" class="input-minimal py-1.5 w-28" value="08:00"><span class="text-gray-400">-</span><input type="time" class="input-minimal py-1.5 w-28" value="17:00"></div>
+                                </div>
+                                <!-- Str -->
+                                <div class="flex items-center gap-4 py-2 border-b border-gray-50">
+                                    <div class="w-24 shrink-0"><label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked class="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"><span class="text-sm font-medium text-gray-900">Středa</span></label></div>
+                                    <div class="flex items-center gap-2 flex-1"><input type="time" class="input-minimal py-1.5 w-28" value="08:00"><span class="text-gray-400">-</span><input type="time" class="input-minimal py-1.5 w-28" value="17:00"></div>
+                                </div>
+                                <!-- Ctv -->
+                                <div class="flex items-center gap-4 py-2 border-b border-gray-50">
+                                    <div class="w-24 shrink-0"><label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked class="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"><span class="text-sm font-medium text-gray-900">Čtvrtek</span></label></div>
+                                    <div class="flex items-center gap-2 flex-1"><input type="time" class="input-minimal py-1.5 w-28" value="08:00"><span class="text-gray-400">-</span><input type="time" class="input-minimal py-1.5 w-28" value="17:00"></div>
+                                </div>
+                                <!-- Pa -->
+                                <div class="flex items-center gap-4 py-2 border-b border-gray-50">
+                                    <div class="w-24 shrink-0"><label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked class="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"><span class="text-sm font-medium text-gray-900">Pátek</span></label></div>
+                                    <div class="flex items-center gap-2 flex-1"><input type="time" class="input-minimal py-1.5 w-28" value="08:00"><span class="text-gray-400">-</span><input type="time" class="input-minimal py-1.5 w-28" value="15:00"></div>
+                                </div>
+                                <!-- So -->
+                                <div class="flex items-center gap-4 py-2 border-b border-gray-50">
+                                    <div class="w-24 shrink-0"><label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"><span class="text-sm font-medium text-gray-900">Sobota</span></label></div>
+                                    <div class="flex items-center gap-2 flex-1 opacity-50"><span class="text-sm text-gray-500">Zavřeno</span></div>
+                                </div>
+                                <!-- Ne -->
+                                <div class="flex items-center gap-4 py-2 border-b border-gray-50">
+                                    <div class="w-24 shrink-0"><label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"><span class="text-sm font-medium text-gray-900">Neděle</span></label></div>
+                                    <div class="flex items-center gap-2 flex-1 opacity-50"><span class="text-sm text-gray-500">Zavřeno</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-gray-900 text-sm mb-4 border-b border-gray-100 pb-2">Speciální otevírací doba</h4>
+                            <p class="text-xs text-gray-500 mb-4">Zadejte otevírací dobu pro svátky a další výjimky. Před těmito dny to Google automaticky zobrazí zákazníkům.</p>
+                            
+                            <div class="space-y-3 mb-3">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-32"><input type="date" class="input-minimal text-xs" value="2026-12-24"></div>
+                                    <div class="w-20"><label class="text-sm text-gray-700 flex items-center gap-2"><input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-brand-600" checked> Zavřeno</label></div>
+                                    <div class="flex-1 opacity-30 pointer-events-none flex items-center gap-2"><input type="time" class="input-minimal py-1 w-24 text-xs"><span class="text-gray-400">-</span><input type="time" class="input-minimal py-1 w-24 text-xs"></div>
+                                    <button class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <div class="w-32"><input type="date" class="input-minimal text-xs" value="2026-12-31"></div>
+                                    <div class="w-20"><label class="text-sm text-gray-700 flex items-center gap-2"><input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-brand-600"> Zavřeno</label></div>
+                                    <div class="flex-1 flex items-center gap-2"><input type="time" class="input-minimal py-1 w-24 text-xs" value="08:00"><span class="text-gray-400">-</span><input type="time" class="input-minimal py-1 w-24 text-xs" value="12:00"></div>
+                                    <button class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </div>
+                            <button class="text-brand-600 text-xs font-semibold text-left hover:underline w-max">+ Přidat datum</button>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-gray-900 text-sm mb-4 border-b border-gray-100 pb-2">Další otevírací doba</h4>
+                            <p class="text-xs text-gray-500 mb-4">Nastavte specifickou otevírací dobu pro konkrétní služby (např. Rozvoz, Pro seniory, Happy hours).</p>
+                            <button class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 font-medium hover:bg-gray-50 transition">+ Přidat další otevírací dobu</button>
+                        </div>
+                    </div>
+
+                    <!-- VÍCE (ATRIBUTY) -->
+                    <div id="se-atributy" class="se-tab-content hidden space-y-8">
+                        <div>
+                            <h4 class="font-bold text-gray-900 text-sm mb-4 border-b border-gray-100 pb-2">Další atributy profilu</h4>
+                            <p class="text-xs text-gray-500 mb-6">Informujte zákazníky o specifikách vašeho podniku. Vyberte ty, které se na vás hodí.</p>
+                            
+                            <div class="space-y-6">
+                                <!-- Přístupnost -->
+                                <div>
+                                    <p class="text-sm font-bold text-gray-700 mb-3"><i class="fa-solid fa-wheelchair text-brand-500 w-5"></i> Přístupnost</p>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked class="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"><span class="text-sm text-gray-700">Bezbariérový vstup</span></label>
+                                        <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"><span class="text-sm text-gray-700">Bezbariérové parkoviště</span></label>
+                                    </div>
+                                </div>
+                                <!-- Vybavení -->
+                                <div>
+                                    <p class="text-sm font-bold text-gray-700 mb-3"><i class="fa-solid fa-wifi text-brand-500 w-5"></i> Vybavení</p>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked class="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"><span class="text-sm text-gray-700">Wi-Fi zdarma</span></label>
+                                        <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked class="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"><span class="text-sm text-gray-700">Toalety pro zákazníky</span></label>
+                                    </div>
+                                </div>
+                                <!-- Platby -->
+                                <div>
+                                    <p class="text-sm font-bold text-gray-700 mb-3"><i class="fa-solid fa-credit-card text-brand-500 w-5"></i> Možnosti platby</p>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked class="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"><span class="text-sm text-gray-700">Kreditní karty</span></label>
+                                        <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked class="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"><span class="text-sm text-gray-700">NFC platby (Apple Pay/Google Pay)</span></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FOTKY -->
+                    <div id="se-fotky" class="se-tab-content hidden space-y-8">
+                        <div>
+                            <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-2">
+                                <h4 class="font-bold text-gray-900 text-sm">Fotografie podniku</h4>
+                                <button class="text-brand-600 text-xs font-bold hover:underline bg-green-50 px-3 py-1.5 rounded-lg border border-green-200"><i class="fa-solid fa-plus mr-1"></i> Přidat fotky</button>
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div class="aspect-square bg-gray-100 rounded-lg border border-gray-200 relative group overflow-hidden">
+                                    <img src="https://iili.io/JcO5UqN.jpg" class="w-full h-full object-cover">
+                                    <button class="absolute top-2 right-2 w-7 h-7 bg-white/90 text-red-500 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-sm"><i class="fa-solid fa-trash text-xs"></i></button>
+                                </div>
+                                <div class="aspect-square bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 hover:bg-white transition cursor-pointer">
+                                    <i class="fa-solid fa-camera text-xl mb-2"></i>
+                                    <span class="text-[10px] font-bold">Nahrát další</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SLUŽBY -->
+                    <div id="se-sluzby" class="se-tab-content hidden space-y-8">
+                        <div>
+                            <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-2">
+                                <h4 class="font-bold text-gray-900 text-sm">Ceník služeb</h4>
+                                <button class="text-brand-600 text-xs font-bold hover:underline bg-green-50 px-3 py-1.5 rounded-lg border border-green-200"><i class="fa-solid fa-plus mr-1"></i> Přidat službu</button>
+                            </div>
+                            <p class="text-xs text-gray-500 mb-6">Udržujte svůj seznam služeb aktuální, aby zákazníci věděli, co přesně nabízíte.</p>
+
+                            <!-- Kategorie: Konzultace -->
+                            <div class="mb-6 border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                                <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                                    <h5 class="font-bold text-gray-800 text-sm">Marketingové konzultace</h5>
+                                    <div class="flex gap-2">
+                                        <button class="text-gray-400 hover:text-brand-600"><i class="fa-solid fa-pen text-xs"></i></button>
+                                    </div>
+                                </div>
+                                <div class="divide-y divide-gray-100">
+                                    <div class="p-4 hover:bg-gray-50 transition group flex justify-between items-start">
+                                        <div>
+                                            <p class="font-bold text-sm text-gray-900">Úvodní marketingový audit</p>
+                                            <p class="text-xs text-gray-500 mt-1 max-w-lg">Kompletní zhodnocení vaší aktuální situace, webu a sociálních sítí. Včetně úvodní zprávy.</p>
+                                            <p class="text-sm font-bold text-gray-700 mt-2">Zdarma</p>
+                                        </div>
+                                        <button class="text-gray-300 group-hover:text-red-500 p-2"><i class="fa-solid fa-trash text-sm"></i></button>
+                                    </div>
+                                    <div class="p-4 hover:bg-gray-50 transition group flex justify-between items-start">
+                                        <div>
+                                            <p class="font-bold text-sm text-gray-900">Tvorba obsahové strategie</p>
+                                            <p class="text-xs text-gray-500 mt-1 max-w-lg">Plán komunikace na 3 měsíce pro sociální sítě a blog.</p>
+                                            <p class="text-sm font-bold text-gray-700 mt-2">Od 15 000 Kč</p>
+                                        </div>
+                                        <button class="text-gray-300 group-hover:text-red-500 p-2"><i class="fa-solid fa-trash text-sm"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PRODUKTY -->
+                    <div id="se-produkty" class="se-tab-content hidden space-y-8">
+                        <div>
+                            <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-2">
+                                <h4 class="font-bold text-gray-900 text-sm">Katalog Google Produktů</h4>
+                                <button class="text-brand-600 text-xs font-bold hover:underline bg-green-50 px-3 py-1.5 rounded-lg border border-green-200"><i class="fa-solid fa-plus mr-1"></i> Přidat produkt</button>
+                            </div>
+                            <p class="text-xs text-gray-500 mb-6">Představte své produkty a speciální nabídky přímo ve vyhledávání a v mapách.</p>
+
+                            <!-- Formulář pro přidání produktu -->
+                            <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 space-y-5">
+                                <h5 class="font-bold text-gray-800 text-sm mb-2"><i class="fa-solid fa-box-open text-brand-500 mr-1"></i> Nový produkt do katalogu</h5>
+                                <div>
+                                    <label class="label-minimal">Fotografie produktu</label>
+                                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center text-gray-500 hover:bg-white transition cursor-pointer bg-gray-50/50">
+                                        <i class="fa-solid fa-image text-2xl mb-2 text-gray-400"></i>
+                                        <span class="text-xs font-bold text-gray-700">Nahrát fotku z počítače</span>
+                                        <span class="text-[10px] text-gray-400 mt-1">Doporučený poměr stran 1:1</span>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div>
+                                        <label class="label-minimal">Název produktu</label>
+                                        <input type="text" class="input-minimal bg-white" placeholder="Přesný název produktu">
+                                    </div>
+                                    <div>
+                                        <label class="label-minimal">Kategorie produktu</label>
+                                        <input type="text" class="input-minimal bg-white" placeholder="Vyberte nebo vytvořte novou">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div>
+                                        <label class="label-minimal">Cena v Kč (volitelné)</label>
+                                        <input type="number" class="input-minimal bg-white" placeholder="Např. 990">
+                                    </div>
+                                    <div>
+                                        <label class="label-minimal">Zvýhodněná cena (volitelné)</label>
+                                        <input type="number" class="input-minimal bg-white" placeholder="Akční cena">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="label-minimal">Popis produktu (volitelné)</label>
+                                    <textarea class="input-minimal bg-white" rows="3" placeholder="Popište produkt pro zákazníky (max 1000 znaků)..."></textarea>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div>
+                                        <label class="label-minimal">Akční tlačítko (volitelné)</label>
+                                        <select class="input-minimal bg-white" onchange="document.getElementById('se-produkty-link-wrap').style.display = this.value === 'none' ? 'none' : 'block'">
+                                            <option value="none">Žádné</option>
+                                            <option value="order">Objednat online</option>
+                                            <option value="buy">Koupit</option>
+                                            <option value="learn_more">Zjistit více</option>
+                                            <option value="get_offer">Získat nabídku</option>
+                                        </select>
+                                    </div>
+                                    <div id="se-produkty-link-wrap" style="display: none;">
+                                        <label class="label-minimal">Odkaz pro tlačítko</label>
+                                        <input type="url" class="input-minimal bg-white" placeholder="https://...">
+                                    </div>
+                                </div>
+                                <div class="flex justify-end pt-2">
+                                    <button class="px-5 py-2 bg-brand-500 text-white text-sm font-medium rounded-lg hover:bg-brand-600 transition shadow-sm">Uložit do profilu</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NOVINKY -->
+                    <div id="se-novinky" class="se-tab-content hidden space-y-8">
+                        <div>
+                            <div class="flex items-center justify-between mb-4 border-b border-gray-100 pb-2">
+                                <h4 class="font-bold text-gray-900 text-sm">Google Novinky (Příspěvky)</h4>
+                                <button class="text-brand-600 text-xs font-bold hover:underline bg-green-50 px-3 py-1.5 rounded-lg border border-green-200"><i class="fa-solid fa-plus mr-1"></i> Přidat novinku</button>
+                            </div>
+                            <p class="text-xs text-gray-500 mb-6">Sdílejte s lidmi aktuality, speciální nabídky, nebo nadcházející události.</p>
+
+                            <!-- Formulář pro novinku -->
+                            <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 space-y-5">
+                                <h5 class="font-bold text-gray-800 text-sm mb-2"><i class="fa-regular fa-newspaper text-brand-500 mr-1"></i> Vytvořit nový příspěvek</h5>
+                                <div>
+                                    <label class="label-minimal">Přidat fotku nebo video</label>
+                                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center text-gray-500 hover:bg-white transition cursor-pointer bg-gray-50/50">
+                                        <i class="fa-solid fa-camera text-3xl mb-3 text-brand-500 opacity-80"></i>
+                                        <span class="text-sm font-bold text-gray-700">Vybrat soubory z počítače</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="label-minimal">Popis příspěvku (max 1500 znaků)</label>
+                                    <textarea class="input-minimal bg-white" rows="5" placeholder="Podělte se se zákazníky o to, co je u vás nového..."></textarea>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div>
+                                        <label class="label-minimal">Přidat tlačítko (volitelné)</label>
+                                        <select class="input-minimal bg-white" onchange="document.getElementById('se-novinky-link-wrap').style.display = this.value === 'none' ? 'none' : 'block'">
+                                            <option value="none">Žádné tlačítko</option>
+                                            <option value="book">Rezervovat</option>
+                                            <option value="order">Objednat online</option>
+                                            <option value="buy">Koupit</option>
+                                            <option value="learn_more">Zjistit více</option>
+                                            <option value="sign_up">Zaregistrovat se</option>
+                                            <option value="call">Zavolat</option>
+                                        </select>
+                                    </div>
+                                    <div id="se-novinky-link-wrap" style="display: none;">
+                                        <label class="label-minimal">Cílový odkaz pro tlačítko</label>
+                                        <input type="url" class="input-minimal bg-white" placeholder="https://...">
+                                    </div>
+                                </div>
+                                <div class="flex justify-end pt-2">
+                                    <button class="px-5 py-2 bg-brand-500 text-white text-sm font-medium rounded-lg hover:bg-brand-600 transition shadow-sm">Publikovat novinku</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end gap-3 shrink-0">
+                <button onclick="toggleSingleEditModal()" class="px-5 py-2 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 transition shadow-sm">Zrušit</button>
+                <button onclick="saveSingleEdit()" class="px-5 py-2 rounded-lg text-sm font-medium text-white bg-brand-500 hover:bg-brand-600 transition shadow-sm">Uložit změny v Google profilu</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODÁLNÍ OKNO PRO HROMADNÉ ÚPRAVY -->
     <div id="bulk-edit-modal" class="fixed inset-0 bg-gray-900/60 z-[60] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 px-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-xl transform scale-95 transition-transform duration-300 overflow-hidden flex flex-col max-h-[90vh]">
@@ -375,7 +888,7 @@
     </div>
 
     <script>
-        // Dropdown menu (Sidebar)
+        // Menu a Toasty
         function toggleMenu(menuId) {
             const submenu = document.getElementById(menuId);
             if(submenu) {
@@ -384,7 +897,6 @@
             }
         }
 
-        // Mobilní menu
         function toggleMobileMenu() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('mobile-overlay');
@@ -398,7 +910,6 @@
             }
         }
 
-        // Toasty
         let toastTimeout;
         function showToast(message) {
             const toast = document.getElementById('toast');
@@ -412,7 +923,6 @@
             }, 3000);
         }
 
-        // Chat
         let isChatOpen = false;
         function toggleChat() {
             const chatWindow = document.getElementById('chat-window');
@@ -424,6 +934,56 @@
                 chatWindow.classList.add('opacity-100', 'translate-y-0');
             }
             isChatOpen = !isChatOpen;
+        }
+
+        // Modál (Úprava jedné pobočky)
+        function toggleSingleEditModal() {
+            const modal = document.getElementById('single-edit-modal');
+            const modalContent = modal.querySelector('.max-w-5xl');
+            
+            if (modal.classList.contains('opacity-0')) {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                setTimeout(() => modalContent.classList.remove('scale-95'), 10);
+            } else {
+                modalContent.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('opacity-0', 'pointer-events-none'), 300);
+            }
+        }
+
+        function openSingleEditModal(pid, name) {
+            document.getElementById('se-branch-id').innerText = pid;
+            document.getElementById('se-branch-name').innerText = name;
+            switchSingleEditTab('se-info'); // Reset to default tab
+            toggleSingleEditModal();
+        }
+
+        function switchSingleEditTab(tabId) {
+            // Skrýt všechny záložky
+            const contents = document.querySelectorAll('.se-tab-content');
+            contents.forEach(content => {
+                content.classList.remove('block');
+                content.classList.add('hidden');
+            });
+            
+            // Ukázat vybranou
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById(tabId).classList.add('block');
+
+            // Reset stylů u tlačítek na mobilu i desktopu
+            const buttons = ['se-info', 'se-kontakt', 'se-misto', 'se-doba', 'se-atributy', 'se-fotky', 'se-sluzby', 'se-produkty', 'se-novinky'];
+            buttons.forEach(id => {
+                const btn = document.getElementById('btn-' + id);
+                if (btn) btn.className = 'whitespace-nowrap md:whitespace-normal w-auto md:w-full text-left px-5 py-4 md:border-l-2 md:border-b-0 border-b-2 border-transparent text-gray-600 hover:bg-white hover:text-gray-900 font-medium text-sm transition';
+            });
+
+            // Aktivovat styl u zvoleného tlačítka
+            const activeBtn = document.getElementById('btn-' + tabId);
+            if (activeBtn) activeBtn.className = 'whitespace-nowrap md:whitespace-normal w-auto md:w-full text-left px-5 py-4 md:border-l-2 md:border-b-0 border-b-2 border-brand-500 bg-white text-brand-600 font-medium text-sm transition';
+        }
+
+        function saveSingleEdit() {
+            showToast('Změny byly úspěšně uloženy do Google Profilu');
+            toggleSingleEditModal();
         }
 
         // Modály (Hromadné úpravy)
@@ -759,7 +1319,6 @@
         function toggleAllBranches(masterCheckbox) {
             const checkboxes = document.querySelectorAll('#branch-list input[type="checkbox"]');
             checkboxes.forEach(cb => {
-                // Označí/odznačí jen ty pobočky, které jsou viditelné (vyfiltrované)
                 if (cb.closest('.branch-item').style.display !== 'none') {
                     cb.checked = masterCheckbox.checked;
                 }
@@ -769,36 +1328,21 @@
         function filterTableBranches() {
             const input = document.getElementById('table-search');
             const filter = input.value.toLowerCase();
-            const rows = document.querySelectorAll('#profiles-table tbody tr.main-row');
+            const rows = document.querySelectorAll('#profiles-table tbody .main-row'); // Fitrujeme jen hlavní řádky
             
             rows.forEach(row => {
                 const text = row.innerText.toLowerCase();
-                const detailId = row.getAttribute('data-detail-id');
-                const detailRow = document.getElementById(detailId);
-                
+                const detailRow = document.getElementById(row.dataset.detailId);
+
                 if (text.includes(filter)) {
                     row.style.display = "";
                 } else {
                     row.style.display = "none";
-                    if (detailRow) {
-                        detailRow.classList.add('hidden');
-                        document.getElementById('icon-' + detailId.split('-')[1]).classList.remove('rotate-180');
+                    if (detailRow && !detailRow.classList.contains('hidden')) {
+                        toggleProfileDetail(row.dataset.detailId, `icon-${row.dataset.detailId.split('-')[1]}`);
                     }
                 }
             });
-        }
-
-        function toggleProfileDetail(detailId, iconId) {
-            const detailRow = document.getElementById(detailId);
-            const icon = document.getElementById(iconId);
-
-            if (detailRow.classList.contains('hidden')) {
-                detailRow.classList.remove('hidden');
-                icon.classList.add('rotate-180');
-            } else {
-                detailRow.classList.add('hidden');
-                icon.classList.remove('rotate-180');
-            }
         }
 
         function toggleDayClosed(checkbox) {
@@ -852,7 +1396,21 @@
             btn.closest('.time-row').remove();
         }
 
-        // TOTO JE TO NOVÉ: Generování seznamu profilů
+        // Tlačítko rozbalení řádku
+        function toggleProfileDetail(detailId, iconId) {
+            const detailRow = document.getElementById(detailId);
+            const icon = document.getElementById(iconId);
+
+            if (detailRow.classList.contains('hidden')) {
+                detailRow.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                detailRow.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        }
+
+        // Generování seznamu profilů
         function generateProfiles() {
             const tbody = document.getElementById('profiles-tbody');
             const modalList = document.getElementById('branch-list');
@@ -868,7 +1426,7 @@
                 const iconId = `icon-${i}`;
 
                 html += `
-                <tr class="hover:bg-gray-50/50 transition group cursor-pointer main-row" onclick="toggleProfileDetail('${detailId}', '${iconId}')" data-detail-id="${detailId}">
+                <tr class="hover:bg-gray-50/50 transition group cursor-pointer main-row border-b border-gray-100" onclick="toggleProfileDetail('${detailId}', '${iconId}')" data-detail-id="${detailId}">
                     <td class="py-4 px-6" onclick="event.stopPropagation()"><input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"></td>
                     <td class="py-4 px-6 text-sm text-gray-500 whitespace-nowrap">${pid}</td>
                     <td class="py-4 px-6 text-sm text-gray-900 font-medium">${name}</td>
@@ -880,67 +1438,64 @@
                             <button onclick="event.stopPropagation(); showToast('Otevírám profil v Mapách')" class="text-gray-400 hover:text-brand-600 p-2 transition" title="Zobrazit v Google Mapách"><i class="fa-solid fa-map-location-dot"></i></button>
                             <button onclick="event.stopPropagation(); showToast('Otevírám profil ve Vyhledávači')" class="text-gray-400 hover:text-brand-600 p-2 transition" title="Zobrazit v Google Vyhledávači"><i class="fa-brands fa-google"></i></button>
                             
-                            <!-- EXTERNÍ ODKAZ NA EDITACI (např. editacefirmy/index.html) -->
-                            <a href="index.html?tab=tab-spolecnost" onclick="event.stopPropagation();" class="text-gray-400 hover:text-brand-600 p-2 transition flex items-center justify-center" title="Upravit profil"><i class="fa-solid fa-pen"></i></a>
+                            <button onclick="event.stopPropagation(); openSingleEditModal('${pid}', '${name}')" class="text-gray-400 hover:text-brand-600 p-2 transition flex items-center justify-center" title="Upravit profil"><i class="fa-solid fa-pen"></i></button>
                             
                             <i id="${iconId}" class="fa-solid fa-chevron-down text-gray-400 ml-2 transition-transform duration-300 cursor-pointer"></i>
                         </div>
                     </td>
                 </tr>
                 
-                <!-- ROZBALOVACÍ DETAIL PROFILU -->
-                <tr id="${detailId}" class="hidden bg-gray-50/80 border-b border-gray-200">
-                    <td colspan="6" class="p-0 cursor-default">
-                        <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8 shadow-[inset_0_4px_6px_-4px_rgba(0,0,0,0.05)]">
-                            <!-- Levý sloupec: Služby -->
+                <tr id="${detailId}" class="hidden bg-gray-50/40 border-b border-gray-200">
+                    <td colspan="6" class="p-0">
+                        <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <!-- Aktivní služby -->
                             <div>
-                                <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider mb-3">Aktivní služby pro tuto pobočku</h4>
-                                <div class="space-y-2">
-                                    <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Stav služeb</p>
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
                                         <div class="flex items-center gap-3">
-                                            <div class="w-8 h-8 rounded-full bg-green-50 text-brand-600 flex items-center justify-center"><i class="fa-brands fa-google"></i></div>
-                                            <span class="text-sm font-medium text-gray-900">Firemní Google profil</span>
+                                            <div class="w-8 h-8 rounded bg-green-50 text-brand-600 flex items-center justify-center"><i class="fa-brands fa-google"></i></div>
+                                            <div><p class="text-sm font-bold text-gray-900">Firemní Google profil</p></div>
                                         </div>
-                                        <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-bold uppercase tracking-wider">Aktivní</span>
+                                        <span class="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold uppercase rounded">Aktivní</span>
                                     </div>
-                                    <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
+                                    <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
                                         <div class="flex items-center gap-3">
-                                            <div class="w-8 h-8 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center"><i class="fa-solid fa-street-view"></i></div>
-                                            <span class="text-sm font-medium text-gray-500">Google Street View</span>
+                                            <div class="w-8 h-8 rounded bg-gray-50 text-gray-400 flex items-center justify-center"><i class="fa-solid fa-street-view"></i></div>
+                                            <div><p class="text-sm font-bold text-gray-900">Street View</p></div>
                                         </div>
-                                        <span class="px-2 py-0.5 bg-gray-100 text-gray-500 rounded text-[10px] font-bold uppercase tracking-wider">Neaktivní</span>
+                                        <span class="px-2 py-1 bg-gray-100 text-gray-600 text-[10px] font-bold uppercase rounded">Neaktivní</span>
                                     </div>
-                                    <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
+                                    <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
                                         <div class="flex items-center gap-3">
-                                            <div class="w-8 h-8 rounded-full bg-green-50 text-brand-600 flex items-center justify-center"><i class="fa-solid fa-wifi"></i></div>
-                                            <span class="text-sm font-medium text-gray-900">NFC Produkty</span>
+                                            <div class="w-8 h-8 rounded bg-green-50 text-brand-600 flex items-center justify-center"><i class="fa-solid fa-wifi"></i></div>
+                                            <div><p class="text-sm font-bold text-gray-900">NFC Vizitky</p></div>
                                         </div>
-                                        <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-bold uppercase tracking-wider">Aktivní</span>
+                                        <span class="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold uppercase rounded">Aktivní</span>
                                     </div>
                                 </div>
                             </div>
                             
-                            <!-- Pravý sloupec: Historie aktivit -->
+                            <!-- Historie -->
                             <div>
-                                <h4 class="text-xs font-bold text-gray-900 uppercase tracking-wider mb-3">Historie aktivit profilu</h4>
-                                <div class="relative border-l-2 border-gray-200 ml-3 space-y-4 pb-2">
-                                    <div class="relative pl-5">
-                                        <div class="absolute w-2.5 h-2.5 bg-brand-500 rounded-full -left-[6px] top-1.5 border-2 border-white"></div>
-                                        <p class="text-xs text-gray-500 mb-0.5">Dnes, 09:15 • Systém (Hromadná úprava)</p>
-                                        <p class="text-sm font-medium text-gray-900">Změna otevírací doby a svátků</p>
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Poslední aktivity profilu</p>
+                                <div class="relative border-l-2 border-gray-200 ml-3 space-y-5">
+                                    <div class="relative pl-6">
+                                        <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-brand-500 border-4 border-gray-50"></div>
+                                        <p class="text-xs text-gray-500 mb-0.5">Dnes, 09:15 <span class="font-semibold text-gray-700 mx-1">•</span> Jan Novák (Správce)</p>
+                                        <p class="text-sm font-medium text-gray-900">Změna otevírací doby (Hromadná úprava)</p>
                                     </div>
-                                    <div class="relative pl-5">
-                                        <div class="absolute w-2.5 h-2.5 bg-gray-300 rounded-full -left-[6px] top-1.5 border-2 border-white"></div>
-                                        <p class="text-xs text-gray-500 mb-0.5">Včera, 14:30 • Michaela Dlouhá</p>
-                                        <p class="text-sm font-medium text-gray-900">Přidán nový Google Příspěvek (Sleva 20%)</p>
+                                    <div class="relative pl-6">
+                                        <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-gray-300 border-4 border-gray-50"></div>
+                                        <p class="text-xs text-gray-500 mb-0.5">Včera, 14:20 <span class="font-semibold text-gray-700 mx-1">•</span> Systém</p>
+                                        <p class="text-sm font-medium text-gray-900">Zveřejněn nový Google Příspěvek</p>
                                     </div>
-                                    <div class="relative pl-5">
-                                        <div class="absolute w-2.5 h-2.5 bg-gray-300 rounded-full -left-[6px] top-1.5 border-2 border-white"></div>
-                                        <p class="text-xs text-gray-500 mb-0.5">15.05.2026 • Jan Novák</p>
-                                        <p class="text-sm font-medium text-gray-900">Aktualizace hlavního telefonního čísla</p>
+                                    <div class="relative pl-6">
+                                        <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-gray-300 border-4 border-gray-50"></div>
+                                        <p class="text-xs text-gray-500 mb-0.5">10. 5. 2025 <span class="font-semibold text-gray-700 mx-1">•</span> Systém</p>
+                                        <p class="text-sm font-medium text-gray-900">Profil úspěšně synchronizován</p>
                                     </div>
                                 </div>
-                                <button onclick="showToast('Otevírám kompletní historii profilu...')" class="text-xs font-medium text-brand-600 hover:text-brand-700 mt-2 ml-3 transition">Zobrazit celou historii profilu</button>
                             </div>
                         </div>
                     </td>
