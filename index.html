@@ -101,7 +101,7 @@
                         <i class="fa-brands fa-google w-5 text-center text-brand-600"></i> <span class="font-bold text-gray-900">Firemní Google profil</span>
                     </div>
                 </button>
-                <div id="gmb-submenu" class="flex flex-col gap-1 pl-11 pr-3 transition-all duration-300 overflow-hidden max-h-40 opacity-100 py-1">
+                <div id="gmb-submenu" class="flex flex-col gap-1 pl-11 pr-3 max-h-40 opacity-100 py-1 transition-all duration-300 overflow-hidden">
                     <a href="seznam-profilu.html" class="block py-1.5 text-sm text-brand-600 font-bold transition">Seznam profilů</a>
                     <a href="gmb-prispevky.html" class="block py-1.5 text-sm text-gray-500 hover:text-gray-900 transition font-medium">Google příspěvky</a>
                     <a href="gmb-statistiky.html" class="block py-1.5 text-sm text-gray-500 hover:text-gray-900 transition font-medium">Statistiky</a>
@@ -449,7 +449,7 @@
                 searchInput.value = '';
                 filterBranches(); 
             }
-            
+
             const selectAllCheckbox = document.getElementById('select-all-branches');
             if (selectAllCheckbox) {
                 selectAllCheckbox.checked = false;
@@ -641,41 +641,86 @@
                 case 'novinky':
                     title = 'Hromadná úprava: Google Novinky';
                     inputHtml = `
-                        <div>
-                            <label class="label-minimal">Text novinky (Příspěvku)</label>
-                            <textarea class="input-minimal mb-3" rows="3" placeholder="Zadejte text novinky pro vaše zákazníky..."></textarea>
-                            
-                            <label class="label-minimal">Přiložit obrázek (Volitelné)</label>
-                            <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 flex flex-col items-center justify-center text-gray-500 hover:bg-gray-50 transition cursor-pointer">
-                                <i class="fa-solid fa-image text-xl mb-1 text-gray-400"></i>
-                                <span class="text-xs font-medium text-gray-600">Nahrát obrázek k příspěvku</span>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="label-minimal">Přidat fotku nebo video</label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center text-gray-500 hover:bg-gray-50 transition cursor-pointer">
+                                    <i class="fa-solid fa-camera text-2xl mb-2 text-brand-500 opacity-80"></i>
+                                    <span class="text-sm font-bold text-gray-700">Vybrat z počítače</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="label-minimal">Popis příspěvku (max 1500 znaků)</label>
+                                <textarea class="input-minimal" rows="4" placeholder="Podělte se se zákazníky o novinky..."></textarea>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="label-minimal">Přidat tlačítko (volitelné)</label>
+                                    <select class="input-minimal" onchange="document.getElementById('novinky-link-wrap').style.display = this.value === 'none' ? 'none' : 'block'">
+                                        <option value="none">Žádné tlačítko</option>
+                                        <option value="book">Rezervovat</option>
+                                        <option value="order">Objednat online</option>
+                                        <option value="buy">Koupit</option>
+                                        <option value="learn_more">Zjistit více</option>
+                                        <option value="sign_up">Zaregistrovat se</option>
+                                        <option value="call">Zavolat</option>
+                                    </select>
+                                </div>
+                                <div id="novinky-link-wrap" style="display: none;">
+                                    <label class="label-minimal">Odkaz pro tlačítko</label>
+                                    <input type="url" class="input-minimal" placeholder="https://...">
+                                </div>
                             </div>
                         </div>`;
                     break;
                 case 'produkty':
                     title = 'Hromadná úprava: Google Produkty';
                     inputHtml = `
-                        <div class="space-y-3">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="label-minimal">Fotografie produktu</label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 flex flex-col items-center justify-center text-gray-500 hover:bg-gray-50 transition cursor-pointer">
+                                    <i class="fa-solid fa-image text-xl mb-1 text-gray-400"></i>
+                                    <span class="text-xs font-medium text-gray-600">Nahrát fotku</span>
+                                </div>
+                            </div>
                             <div>
                                 <label class="label-minimal">Název produktu</label>
-                                <input type="text" class="input-minimal" placeholder="Např. Konzultace zdarma">
+                                <input type="text" class="input-minimal" placeholder="Přesný název produktu nebo služby">
+                            </div>
+                            <div>
+                                <label class="label-minimal">Kategorie</label>
+                                <input type="text" class="input-minimal" placeholder="Vytvořit novou (např. Služby, Akční zboží...)">
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="label-minimal">Cena (Kč)</label>
+                                    <label class="label-minimal">Cena v Kč (volitelné)</label>
                                     <input type="number" class="input-minimal" placeholder="Např. 990">
                                 </div>
                                 <div>
-                                    <label class="label-minimal">Kategorie</label>
-                                    <select class="input-minimal">
-                                        <option>Služby</option>
-                                        <option>Zboží</option>
-                                    </select>
+                                    <label class="label-minimal">Zvýhodněná cena (volitelné)</label>
+                                    <input type="number" class="input-minimal" placeholder="Akční cena">
                                 </div>
                             </div>
                             <div>
-                                <label class="label-minimal">Popis produktu</label>
-                                <textarea class="input-minimal" rows="2" placeholder="Stručný popis produktu pro zákazníky..."></textarea>
+                                <label class="label-minimal">Popis produktu (volitelné, max 1000 znaků)</label>
+                                <textarea class="input-minimal" rows="3" placeholder="Popište produkt pro zákazníky..."></textarea>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="label-minimal">Tlačítko (volitelné)</label>
+                                    <select class="input-minimal" onchange="document.getElementById('produkty-link-wrap').style.display = this.value === 'none' ? 'none' : 'block'">
+                                        <option value="none">Žádné</option>
+                                        <option value="order">Objednat online</option>
+                                        <option value="buy">Koupit</option>
+                                        <option value="learn_more">Zjistit více</option>
+                                        <option value="get_offer">Získat nabídku</option>
+                                    </select>
+                                </div>
+                                <div id="produkty-link-wrap" style="display: none;">
+                                    <label class="label-minimal">Odkaz pro tlačítko</label>
+                                    <input type="url" class="input-minimal" placeholder="https://...">
+                                </div>
                             </div>
                         </div>`;
                     break;
@@ -704,7 +749,7 @@
                     node.style.display = "none";
                 }
             });
-            
+
             const selectAllCheckbox = document.getElementById('select-all-branches');
             if (selectAllCheckbox) {
                 selectAllCheckbox.checked = false;
@@ -787,7 +832,7 @@
             btn.closest('.time-row').remove();
         }
 
-        // TOTO JE TO NOVÉ: Generování seznamu profilů
+        // Generování seznamu profilů
         function generateProfiles() {
             const tbody = document.getElementById('profiles-tbody');
             const modalList = document.getElementById('branch-list');
